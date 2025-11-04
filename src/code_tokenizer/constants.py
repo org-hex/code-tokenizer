@@ -4,7 +4,8 @@
 DEFAULT_EXCLUDE_PATTERNS = [
     "vendor", "node_modules", ".git", "__pycache__",
     "target", "build", "dist", ".venv", "venv", "env",
-    ".github", ".code_cache", "code_collected_*.txt", "output"
+    ".github", ".code_cache", "code_collected_*.txt", 
+    "output","package-lock.json"
 ]
 
 # Default file patterns

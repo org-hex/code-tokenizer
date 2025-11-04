@@ -85,7 +85,7 @@ def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
 
             # Set column styles
             rules_table.columns[0].style = "cyan"
-            rules_table.columns[1].style = "white"
+            rules_table.columns[1].style = "black"
 
             # Show default analysis rules
             default_file_patterns = collector.get_default_file_patterns()
@@ -255,7 +255,7 @@ def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
             # Check if all files should be displayed
             if len(files) > max_files:
                 # Only show some files, separate with ...
-                table.add_row(".", "...", "...", "...")
+                table.add_row("...", "...", "...", "...")
 
             console.print(table)
             console.print()
