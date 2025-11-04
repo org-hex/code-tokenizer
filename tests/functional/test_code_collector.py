@@ -1,6 +1,6 @@
 """
-CodeCollector 功能测试
-测试文件扫描、过滤、缓存管理等功能
+CodeCollector functional tests
+Test file scanning, filtering, cache management and other features
 """
 
 import pytest
@@ -13,47 +13,47 @@ from src.code_tokenizer.code_collector import CodeCollector
 
 
 class TestCodeCollector:
-    """CodeCollector 测试类"""
+    """CodeCollector test class"""
 
     def setup_method(self):
-        """每个测试方法执行前的设置"""
+        """Setup before each test method"""
         self.temp_dir = Path(tempfile.mkdtemp())
         self.cache_dir = self.temp_dir / ".cache"
         self.collector = CodeCollector(cache_dir=str(self.cache_dir))
 
     def teardown_method(self):
-        """每个测试方法执行后的清理"""
+        """Cleanup after each test method"""
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
     def test_init(self):
-        """测试 CodeCollector 初始化"""
+        """Test CodeCollector initialization"""
         assert self.collector.cache_dir.exists()
         assert self.collector.cache_index_file.exists() or not self.collector.cache_index_file.exists()
         assert isinstance(self.collector.cache_index, dict)
 
     def test_init_with_default_cache_dir(self):
-        """测试使用默认缓存目录的初始化"""
+        """Test initialization with default cache directory"""
         collector = CodeCollector()
         assert collector.cache_dir.name == ".code_cache"
 
     def test_load_save_cache_index(self, temp_dir):
-        """测试缓存索引的加载和保存"""
-        # 创建新的 collector
+        """Test loading and saving cache index"""
+        # Create new collector
         cache_dir = temp_dir / "test_cache"
         collector = CodeCollector(cache_dir=str(cache_dir))
 
-        # 添加一些测试数据
+        # Add some test data
         test_data = {"test_key": {"file": "test.txt", "created_at": "2024-01-01"}}
         collector.cache_index = test_data
         collector._save_cache_index()
 
-        # 创建新的 collector 实例来测试加载
+        # Create new collector instance to test loading
         new_collector = CodeCollector(cache_dir=str(cache_dir))
         assert new_collector.cache_index == test_data
 
     def test_get_file_hash(self, temp_dir):
-        """测试文件哈希计算"""
+        """Test file hash calculation"""
         content = "Test content for hash calculation"
         file_path = temp_dir / "test_file.txt"
         file_path.write_text(content)
@@ -63,21 +63,21 @@ class TestCodeCollector:
 
         assert isinstance(hash1, str)
         assert len(hash1) == 32  # MD5 hash length
-        assert hash1 == hash2  # 相同文件应该有相同哈希
+        assert hash1 == hash2  # Same file should have same hash
 
-        # 修改文件内容后哈希应该改变
+        # Hash should change after modifying file content
         file_path.write_text("Modified content")
         hash3 = self.collector._get_file_hash(file_path)
         assert hash1 != hash3
 
     def test_get_file_hash_nonexistent(self):
-        """测试不存在文件的哈希计算"""
+        """Test hash calculation for non-existent files"""
         nonexistent_file = self.temp_dir / "nonexistent.txt"
         hash_value = self.collector._get_file_hash(nonexistent_file)
         assert hash_value == ""
 
     def test_get_project_hash(self):
-        """测试项目哈希计算"""
+        """Test project hash calculation"""
         project_path = Path("/test/project")
         file_patterns = ["*.py", "*.js"]
         exclude_patterns = ["node_modules", "*.test.py"]
@@ -86,32 +86,32 @@ class TestCodeCollector:
         hash2 = self.collector._get_project_hash(project_path, file_patterns, exclude_patterns)
 
         assert isinstance(hash1, str)
-        assert len(hash1) == 16  # 截取的 MD5 hash
+        assert len(hash1) == 16  # Truncated MD5 hash
         assert hash1 == hash2
 
-        # 改变参数后哈希应该改变
+        # Hash should change after changing parameters
         hash3 = self.collector._get_project_hash(project_path, ["*.py"], exclude_patterns)
         assert hash1 != hash3
 
     def test_scan_files_basic(self, sample_project_structure):
-        """测试基本文件扫描功能"""
+        """Test basic file scanning functionality"""
         files = self.collector.scan_files(str(sample_project_structure))
 
         assert isinstance(files, list)
         assert len(files) > 0
 
-        # 验证返回的都是 Path 对象
+        # Verify all returned items are Path objects
         for file_path in files:
             assert isinstance(file_path, Path)
             assert file_path.exists()
             assert file_path.is_file()
 
-        # 验证文件已排序且无重复
+        # Verify files are sorted and without duplicates
         assert files == sorted(set(files))
 
     def test_scan_files_with_patterns(self, sample_project_structure):
-        """测试使用模式匹配的文件扫描"""
-        # 只扫描 Python 文件
+        """Test file scanning with pattern matching"""
+        # Scan only Python files
         py_files = self.collector.scan_files(
             str(sample_project_structure),
             file_patterns=["*.py"]
@@ -120,7 +120,7 @@ class TestCodeCollector:
         for file_path in py_files:
             assert file_path.suffix == ".py"
 
-        # 只扫描 Markdown 文件
+        # Scan only Markdown files
         md_files = self.collector.scan_files(
             str(sample_project_structure),
             file_patterns=["*.md"]
@@ -130,10 +130,10 @@ class TestCodeCollector:
             assert file_path.suffix == ".md"
 
     def test_scan_files_with_exclude_patterns(self, sample_project_structure):
-        """测试排除模式的文件扫描"""
+        """Test file scanning with exclude patterns"""
         all_files = self.collector.scan_files(str(sample_project_structure))
 
-        # 排除测试文件
+        # Exclude test files
         filtered_files = self.collector.scan_files(
             str(sample_project_structure),
             exclude_patterns=["test_*.py"]
@@ -141,24 +141,24 @@ class TestCodeCollector:
 
         assert len(filtered_files) <= len(all_files)
 
-        # 验证没有测试文件
+        # Verify no test files
         for file_path in filtered_files:
             assert not file_path.name.startswith("test_")
 
     def test_scan_files_with_include_patterns(self, sample_project_structure):
-        """测试包含模式的文件扫描"""
-        # 只包含特定文件
+        """Test file scanning with include patterns"""
+        # Include only specific files
         included_files = self.collector.scan_files(
             str(sample_project_structure),
             include_patterns=["main.py"]
         )
 
-        # 根据实际实现验证结果
+        # Verify results based on actual implementation
         assert len(included_files) >= 1
         file_names = [f.name for f in included_files]
         assert "main.py" in file_names
 
-        # 测试多个包含模式
+        # Test multiple include patterns
         included_files = self.collector.scan_files(
             str(sample_project_structure),
             include_patterns=["main.py", "utils.py"]
@@ -170,53 +170,53 @@ class TestCodeCollector:
         assert "utils.py" in file_names
 
     def test_scan_files_excludes_hidden_files(self, temp_dir):
-        """测试排除隐藏文件"""
-        # 创建测试文件
+        """Test excluding hidden files"""
+        # Create test files
         (temp_dir / "normal.py").write_text("print('normal')")
         (temp_dir / ".hidden.py").write_text("print('hidden')")
         (temp_dir / ".env").write_text("SECRET=value")
 
         files = self.collector.scan_files(str(temp_dir))
 
-        # 应该只包含普通文件，不包含隐藏文件
+        # Should only include normal files, not hidden files
         file_names = [f.name for f in files]
         assert "normal.py" in file_names
         assert ".hidden.py" not in file_names
         assert ".env" not in file_names
 
     def test_scan_files_excludes_node_modules(self, sample_project_structure):
-        """测试排除 node_modules 目录"""
+        """Test excluding node_modules directory"""
         files = self.collector.scan_files(str(sample_project_structure))
 
-        # 验证没有 node_modules 中的文件
+        # Verify no files from node_modules
         for file_path in files:
             assert "node_modules" not in str(file_path)
 
     def test_scan_files_empty_directory(self, temp_dir):
-        """测试扫描空目录"""
+        """Test scanning empty directory"""
         files = self.collector.scan_files(str(temp_dir))
         assert files == []
 
     def test_scan_files_nonexistent_directory(self):
-        """测试扫描不存在的目录"""
+        """Test scanning non-existent directory"""
         files = self.collector.scan_files("/nonexistent/directory")
-        # 应该返回空列表而不是抛出异常
+        # Should return empty list instead of throwing exception
         assert files == []
 
     def test_get_default_file_patterns(self):
-        """测试获取默认文件模式"""
+        """Test getting default file patterns"""
         patterns = self.collector.get_default_file_patterns()
         assert isinstance(patterns, list)
         assert len(patterns) > 0
 
-        # 验证包含常见的代码文件扩展名
+        # Verify inclusion of common code file extensions
         pattern_str = " ".join(patterns)
         assert "*.py" in pattern_str
         assert "*.js" in pattern_str
         assert "*.ts" in pattern_str
 
     def test_collect_code_basic(self, sample_project_structure):
-        """测试基本代码收集功能"""
+        """Test basic code collection functionality"""
         output_file = self.temp_dir / "collected_code.txt"
 
         result_path = self.collector.collect_code(
@@ -228,26 +228,26 @@ class TestCodeCollector:
         assert result_path == str(output_file)
         assert output_file.exists()
 
-        # 验证收集的文件内容
+        # Verify collected file content
         content = output_file.read_text(encoding='utf-8')
         assert "# Code Collection Report" in content
         assert "Project Path:" in content
         assert "File Count:" in content
-        assert "main.py" in content or "utils.py" in content  # 应该包含一些源代码文件
+        assert "main.py" in content or "utils.py" in content  # Should include some source code files
 
     def test_collect_code_with_cache(self, sample_project_structure):
-        """测试带缓存的代码收集"""
+        """Test code collection with cache"""
         output_file1 = self.temp_dir / "collected1.txt"
         output_file2 = self.temp_dir / "collected2.txt"
 
-        # 第一次收集
+        # First collection
         result1 = self.collector.collect_code(
             str(sample_project_structure),
             output_file=str(output_file1),
             use_cache=True
         )
 
-        # 第二次收集（应该使用缓存）
+        # Second collection (should use cache)
         result2 = self.collector.collect_code(
             str(sample_project_structure),
             output_file=str(output_file2),
@@ -259,12 +259,12 @@ class TestCodeCollector:
         assert output_file1.exists()
         assert output_file2.exists()
 
-        # 验证缓存文件存在
+        # Verify cache files exist
         cache_files = list(self.cache_dir.glob("cache_*.txt"))
         assert len(cache_files) > 0
 
     def test_collect_code_without_cache(self, sample_project_structure):
-        """测试不使用缓存的代码收集"""
+        """Test code collection without cache"""
         output_file = self.temp_dir / "collected_no_cache.txt"
 
         result = self.collector.collect_code(
@@ -276,12 +276,12 @@ class TestCodeCollector:
         assert result == str(output_file)
         assert output_file.exists()
 
-        # 验证没有创建缓存文件
+        # Verify no cache files created
         cache_files = list(self.cache_dir.glob("cache_*.txt"))
         assert len(cache_files) == 0
 
     def test_collect_code_no_files_found(self, temp_dir):
-        """测试没有找到文件时的代码收集"""
+        """Test code collection when no files found"""
         output_file = self.temp_dir / "empty_result.txt"
 
         result = self.collector.collect_code(
@@ -291,10 +291,10 @@ class TestCodeCollector:
         )
 
         assert result == str(output_file)
-        # 应该创建文件但内容可能很少
+        # Should create file but content might be minimal
 
     def test_collect_code_custom_format(self, sample_project_structure):
-        """测试自定义格式的代码收集"""
+        """Test code collection with custom format"""
         output_file = self.temp_dir / "custom_format.txt"
 
         result = self.collector.collect_code_custom_format(
@@ -305,13 +305,13 @@ class TestCodeCollector:
         assert result == str(output_file)
         assert output_file.exists()
 
-        # 验证自定义格式
+        # Verify custom format
         content = output_file.read_text(encoding='utf-8')
         assert "# Code Collection Report" in content
-        assert "####### [idx:" in content  # 自定义格式的标记
+        assert "####### [idx:" in content  # Custom format marker
 
     def test_collect_code_custom_format_with_include_patterns(self, sample_project_structure):
-        """测试使用包含模式的自定义格式代码收集"""
+        """Test custom format code collection with include patterns"""
         output_file = self.temp_dir / "custom_include.txt"
 
         result = self.collector.collect_code_custom_format(
@@ -323,69 +323,69 @@ class TestCodeCollector:
         assert result == str(output_file)
         content = output_file.read_text(encoding='utf-8')
         assert "main.py" in content
-        # 基于实际实现，可能包含其他文件，但至少应该包含指定的文件
+        # Based on actual implementation, might include other files, but should at least include specified files
 
     def test_clear_cache_all(self):
-        """测试清除所有缓存"""
-        # 创建一些缓存数据
+        """Test clearing all cache"""
+        # Create some cache data
         self.collector.cache_index["test1"] = {"file": "cache1.txt"}
         self.collector.cache_index["test2"] = {"file": "cache2.txt"}
         self.collector._save_cache_index()
 
-        # 创建一些缓存文件
+        # Create some cache files
         (self.cache_dir / "cache1.txt").write_text("test1")
         (self.cache_dir / "cache2.txt").write_text("test2")
 
-        # 清除所有缓存
+        # Clear all cache
         self.collector.clear_cache()
 
         assert len(self.collector.cache_index) == 0
         assert not list(self.cache_dir.glob("cache_*.txt"))
 
     def test_clear_cache_project_specific(self):
-        """测试清除特定项目的缓存"""
-        # 创建两个项目的缓存数据
+        """Test clearing cache for specific project"""
+        # Create cache data for two projects
         self.collector.cache_index["project1_abc"] = {"file": "cache1.txt"}
         self.collector.cache_index["project2_def"] = {"file": "cache2.txt"}
         self.collector._save_cache_index()
 
-        # 创建缓存文件
+        # Create cache files
         (self.cache_dir / "cache1.txt").write_text("test1")
         (self.cache_dir / "cache2.txt").write_text("test2")
 
-        # 只清除 project1 的缓存
+        # Clear only project1's cache
         self.collector.clear_cache("project1")
 
-        # 验证只有 project1 的缓存被清除
+        # Verify only project1's cache is cleared
         assert "project1_abc" not in self.collector.cache_index
         assert "project2_def" in self.collector.cache_index
         assert not (self.cache_dir / "cache1.txt").exists()
         assert (self.cache_dir / "cache2.txt").exists()
 
     def test_clear_cache_nonexistent_project(self):
-        """测试清除不存在项目的缓存"""
+        """Test clearing cache for non-existent project"""
         initial_cache_index = self.collector.cache_index.copy()
 
-        # 尝试清除不存在项目的缓存
+        # Try to clear non-existent project cache
         self.collector.clear_cache("nonexistent_project")
 
-        # 缓存索引应该保持不变
+        # Cache index should remain unchanged
         assert self.collector.cache_index == initial_cache_index
 
     def test_list_cache_empty(self):
-        """测试列出空的缓存"""
-        # 确保缓存为空
+        """Test listing empty cache"""
+        # Ensure cache is empty
         self.collector.cache_index.clear()
         self.collector._save_cache_index()
 
-        # 列出缓存不应该崩溃
+        # Listing cache should not crash
         with patch('src.code_tokenizer.code_collector.console') as mock_console:
             self.collector.list_cache()
             mock_console.print.assert_called()
 
     def test_list_cache_with_data(self):
-        """测试列出有数据的缓存"""
-        # 创建测试缓存数据
+        """Test listing cache with data"""
+        # Create test cache data
         from datetime import datetime
         test_time = datetime.now().isoformat()
 
@@ -399,20 +399,20 @@ class TestCodeCollector:
         }
         self.collector._save_cache_index()
 
-        # 创建缓存文件
+        # Create cache file
         (self.cache_dir / "cache_test.txt").write_text("test content")
 
-        # 列出缓存不应该崩溃
+        # Listing cache should not crash
         with patch('src.code_tokenizer.code_collector.console') as mock_console:
             self.collector.list_cache()
             mock_console.print.assert_called()
 
     def test_write_files_to_file(self, sample_project_structure):
-        """测试写入文件到输出文件的内部方法"""
+        """Test internal method for writing files to output file"""
         files = self.collector.scan_files(str(sample_project_structure))
         output_file = self.temp_dir / "test_output.txt"
 
-        # 调用内部方法
+        # Call internal method
         self.collector._write_files_to_file(files, str(output_file), sample_project_structure)
 
         assert output_file.exists()
@@ -421,11 +421,11 @@ class TestCodeCollector:
         assert "Project Path:" in content
 
     def test_write_files_to_custom_format(self, sample_project_structure):
-        """测试写入文件到自定义格式的内部方法"""
+        """Test internal method for writing files to custom format"""
         files = self.collector.scan_files(str(sample_project_structure))
         output_file = self.temp_dir / "test_custom.txt"
 
-        # 调用内部方法
+        # Call internal method
         self.collector._write_files_to_custom_format(files, str(output_file), sample_project_structure)
 
         assert output_file.exists()
@@ -434,7 +434,7 @@ class TestCodeCollector:
         assert "####### [idx:" in content
 
     def test_collect_code_with_file_patterns(self, sample_project_structure):
-        """测试使用文件模式的代码收集"""
+        """Test code collection with file patterns"""
         output_file = self.temp_dir / "python_only.txt"
 
         result = self.collector.collect_code(
@@ -447,20 +447,20 @@ class TestCodeCollector:
         assert result == str(output_file)
         content = output_file.read_text(encoding='utf-8')
 
-        # 验证只包含 Python 文件
+        # Verify only Python files are included
         assert ".py" in content
-        # 根据示例项目结构，应该不包含 Markdown 文件
+        # Based on sample project structure, should not include Markdown files
         assert "README.md" not in content
 
     def test_collect_code_error_handling(self, temp_dir):
-        """测试代码收集中的错误处理"""
-        # 创建一个测试文件
+        """Test error handling in code collection"""
+        # Create a test file
         test_file = temp_dir / "test.py"
         test_file.write_text("print('test')")
 
         output_file = temp_dir / "error_test.txt"
 
-        # 简单测试：验证正常流程
+        # Simple test: verify normal flow
         result = self.collector.collect_code(
             str(temp_dir),
             output_file=str(output_file),
@@ -472,15 +472,15 @@ class TestCodeCollector:
         assert output_file.exists()
 
     def test_scan_files_duplicate_handling(self, sample_project_structure):
-        """测试文件扫描中的重复处理"""
-        # 使用多种模式扫描，可能导致重复
+        """Test duplicate handling in file scanning"""
+        # Use multiple patterns that might cause duplicates
         files = self.collector.scan_files(
             str(sample_project_structure),
-            file_patterns=["*.py", "*.md", "*.txt"]  # 包含一些可能不存在的模式
+            file_patterns=["*.py", "*.md", "*.txt"]  # Include some potentially non-existent patterns
         )
 
-        # 验证没有重复文件
+        # Verify no duplicate files
         assert len(files) == len(set(files))
 
-        # 验证文件已排序
+        # Verify files are sorted
         assert files == sorted(files)

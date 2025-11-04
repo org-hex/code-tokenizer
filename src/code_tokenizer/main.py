@@ -28,13 +28,14 @@ width_manager = TableWidthManager(console)
 @click.option('--max-show', '-m', default=10, help='Show top N largest files (default 10)')
 @click.option('--exclude', '-e', multiple=True, metavar='[pattern]', help='Exclude files/folders (wildcards supported)')
 @click.option('--include', '-i', multiple=True, metavar='[pattern]', help='Force include specific files')
+@click.option('--no-gitignore', is_flag=True, help='Disable automatic .gitignore rule integration')
 @click.option('--save-csv', '-s', metavar='[filename.csv]', help='Save as CSV format')
 @click.option('--json-save', metavar='[filename.json]', help='Save as JSON format')
 @click.option('--json', 'output_json', is_flag=True, help='Output pure JSON data')
 @click.argument('project_path', type=click.Path(exists=True, path_type=Path), required=False)
 def cli(project_path: Optional[Path], max_show: int, package: Optional[str],
         save_csv: Optional[str], json_save: Optional[str], output_json: bool,
-        exclude: tuple, include: tuple):
+        exclude: tuple, include: tuple, no_gitignore: bool):
     """AI project token statistics tool - Quickly analyze AI model token usage in codebase"""
 
     # Use current directory as default
@@ -43,11 +44,11 @@ def cli(project_path: Optional[Path], max_show: int, package: Optional[str],
 
     # If package parameter is specified, execute packaging functionality
     if package:
-        run_package_command(project_path, package, exclude, include)
+        run_package_command(project_path, package, exclude, include, not no_gitignore)
         return
 
     # Execute analysis functionality
-    file_token_info = run_analysis(project_path, max_show, output_json, exclude, include)
+    file_token_info = run_analysis(project_path, max_show, output_json, exclude, include, not no_gitignore)
 
     # If there are analysis results and save options are specified, execute save
     if file_token_info:
@@ -58,7 +59,7 @@ def cli(project_path: Optional[Path], max_show: int, package: Optional[str],
 
 
 def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
-                 exclude: tuple = (), include: tuple = ()):
+                 exclude: tuple = (), include: tuple = (), use_gitignore: bool = True):
     """Run analysis functionality and return analysis results"""
     collector = CodeCollector()
     analyzer = CodeAnalyzer()
@@ -102,6 +103,16 @@ def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
             if include:
                 rules_table.add_row("User Included", ", ".join(include))
 
+            # Show .gitignore status
+            if use_gitignore:
+                gitignore_rules = collector.get_gitignore_rules(project_path)
+                if gitignore_rules:
+                    rules_table.add_row("GitIgnore Rules", f"Enable ({len(gitignore_rules)} rules)")
+                else:
+                    rules_table.add_row("GitIgnore Rules", "Enable (No .gitignore file)")
+            else:
+                rules_table.add_row("GitIgnore Rules", "Disabled")
+
             console.print(rules_table)
             console.print()
             console.print("[cyan]Scanning project files...[/cyan]")
@@ -112,7 +123,7 @@ def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
             files = [project_path]
         else:
             # Directory scanning processing
-            files = collector.scan_files(project_path, exclude_patterns=exclude_patterns, include_patterns=list(include))
+            files = collector.scan_files(project_path, exclude_patterns=exclude_patterns, include_patterns=list(include), use_gitignore=use_gitignore)
             # Filter out previously collected files
             files = [f for f in files if not f.name.startswith('code_collected_')]
 
@@ -404,7 +415,7 @@ def run_analysis(project_path: Path, max_files: int, output_json: bool = False,
             raise click.Abort()
 
 
-def run_package_command(project_path: Path, output: Optional[str], exclude: tuple = (), include: tuple = ()):
+def run_package_command(project_path: Path, output: Optional[str], exclude: tuple = (), include: tuple = (), use_gitignore: bool = True):
     """Execute packaging functionality"""
     collector = CodeCollector()
     analyzer = CodeAnalyzer()
@@ -413,7 +424,7 @@ def run_package_command(project_path: Path, output: Optional[str], exclude: tupl
     exclude_patterns = list(DEFAULT_EXCLUDE_PATTERNS) + list(exclude)
 
     # First scan files to get statistical information
-    files = collector.scan_files(str(project_path), exclude_patterns=exclude_patterns, include_patterns=list(include))
+    files = collector.scan_files(str(project_path), exclude_patterns=exclude_patterns, include_patterns=list(include), use_gitignore=use_gitignore)
 
     if not files:
         console.print("[red]❌[/red] No files found")

@@ -18,6 +18,7 @@ Modern LLM models (like GPT-4 Turbo, Claude-4) have context lengths of 200k+, wh
 - **Context Analysis** - Display the percentage of each AI model's context window used by your project to determine if it exceeds limits
 - **One-Click Packaging** - Merge all code files into a single file for easy one-time submission to AI models
 - **Smart Filtering** - Automatically exclude irrelevant files (node_modules, .git, etc.) and keep only core code
+- **GitIgnore Integration** - Automatically read and apply .gitignore rules to filter out ignored files and folders
 
 ## 📦 Installation
 
@@ -28,7 +29,7 @@ pip install code-tokenizer
 ## 🚀 Usage
 
 ```bash
-# Count Tokens for current project
+# Count Tokens for current project (automatically applies .gitignore rules)
 code-tokenizer
 
 # Count Tokens for specified project
@@ -39,6 +40,9 @@ code-tokenizer --package my_project.txt
 
 # Show only the top 5 largest files
 code-tokenizer --max-show 5
+
+# Disable automatic .gitignore rule integration
+code-tokenizer --no-gitignore
 ```
 
 ## 📊 Example Output

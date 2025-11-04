@@ -64,8 +64,94 @@ class CodeCollector:
         hash_source = f"{project_path}_{sorted(file_patterns)}_{sorted(exclude_patterns)}"
         return hashlib.md5(hash_source.encode()).hexdigest()[:16]
 
+    def _load_gitignore_rules(self, project_path: Path) -> List[str]:
+        """Load and parse .gitignore rules from project root"""
+        gitignore_path = project_path / '.gitignore'
+
+        if not gitignore_path.exists():
+            return []
+
+        try:
+            with open(gitignore_path, 'r', encoding='utf-8') as f:
+                rules = []
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith('#'):
+                        continue
+                    # Normalize path separators and store rule
+                    rules.append(line.replace('\\', '/'))
+                return rules
+        except (IOError, OSError, UnicodeDecodeError):
+            # If we can't read the file, return empty list
+            return []
+
+    def _match_gitignore_pattern(self, file_path: Path, project_root: Path, pattern: str) -> bool:
+        """Check if file matches a gitignore pattern"""
+        # Get relative path from project root
+        try:
+            relative_path = str(file_path.relative_to(project_root)).replace('\\', '/')
+        except ValueError:
+            # If file is not under project root, use full path
+            relative_path = str(file_path).replace('\\', '/')
+
+        # Handle directory patterns (ending with /)
+        if pattern.endswith('/'):
+            # Match only directories
+            if file_path.is_dir():
+                dir_pattern = pattern.rstrip('/')
+                # Remove leading slash if present
+                if dir_pattern.startswith('/'):
+                    dir_pattern = dir_pattern[1:]
+                # Check if directory name matches or is under the pattern
+                return (fnmatch.fnmatch(relative_path, dir_pattern + '/*') or
+                        fnmatch.fnmatch(relative_path, '*/' + dir_pattern + '/*') or
+                        fnmatch.fnmatch(relative_path, dir_pattern) or
+                        fnmatch.fnmatch(file_path.name, dir_pattern))
+            return False
+
+        # Handle absolute patterns (starting with /)
+        if pattern.startswith('/'):
+            pattern = pattern[1:]
+            # Match from root
+            return (fnmatch.fnmatch(relative_path, pattern) or
+                    fnmatch.fnmatch(relative_path, pattern + '/*'))
+
+        # Handle regular patterns
+        # Try different matching approaches similar to git's behavior
+        return (fnmatch.fnmatch(relative_path, pattern) or
+                fnmatch.fnmatch(relative_path, '*/' + pattern) or
+                fnmatch.fnmatch(relative_path, pattern + '/*') or
+                fnmatch.fnmatch(relative_path, '*/' + pattern + '/*') or
+                fnmatch.fnmatch(file_path.name, pattern))
+
+    def _should_exclude_by_gitignore(self, file_path: Path, project_root: Path,
+                                   gitignore_rules: List[str]) -> bool:
+        """Check if file should be excluded based on gitignore rules"""
+        if not gitignore_rules:
+            return False
+
+        # Track negation patterns separately
+        excluded = False
+        for rule in gitignore_rules:
+            if rule.startswith('!'):
+                # Negation pattern - if file matches, don't exclude
+                if self._match_gitignore_pattern(file_path, project_root, rule[1:]):
+                    excluded = False
+            else:
+                # Regular exclusion pattern
+                if self._match_gitignore_pattern(file_path, project_root, rule):
+                    excluded = True
+
+        return excluded
+
+    def get_gitignore_rules(self, project_path: Path) -> List[str]:
+        """Get .gitignore rules for display purposes"""
+        return self._load_gitignore_rules(project_path)
+
     def scan_files(self, project_path: str, file_patterns: List[str] = None,
-                  exclude_patterns: List[str] = None, include_patterns: List[str] = None) -> List[Path]:
+                  exclude_patterns: List[str] = None, include_patterns: List[str] = None,
+                  use_gitignore: bool = True) -> List[Path]:
         """Scan project files"""
         if file_patterns is None:
             file_patterns = DEFAULT_FILE_PATTERNS
@@ -79,6 +165,11 @@ class CodeCollector:
         project_path = Path(project_path)
         files = []
         processed_files = set()
+
+        # Load .gitignore rules if enabled
+        gitignore_rules = []
+        if use_gitignore:
+            gitignore_rules = self._load_gitignore_rules(project_path)
 
         # First process files in include_patterns (highest priority)
         if include_patterns:
@@ -102,6 +193,10 @@ class CodeCollector:
                             fnmatch.fnmatch(file_path.name, exclude_pattern)):
                             should_exclude = True
                             break
+
+                    # Check .gitignore rules for included files (lower priority than explicit includes)
+                    if not should_exclude and use_gitignore:
+                        should_exclude = self._should_exclude_by_gitignore(file_path, project_path, gitignore_rules)
 
                     if not should_exclude:
                         files.append(file_path)
@@ -134,6 +229,10 @@ class CodeCollector:
                         exclude_pattern in file_path.name):
                         should_exclude = True
                         break
+
+                # Check .gitignore rules if enabled and not already excluded
+                if not should_exclude and use_gitignore:
+                    should_exclude = self._should_exclude_by_gitignore(file_path, project_path, gitignore_rules)
 
                 if not should_exclude:
                     files.append(file_path)

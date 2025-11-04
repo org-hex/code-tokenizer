@@ -8,7 +8,6 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-
 一个简单的命令行工具，快速统计整个项目的AI模型Token使用量，帮你判断项目是否适合直接给AI分析。
 
 现代LLM模型（如GPT-4 Turbo、Claude-4）的上下文长度已达200k+，完全可以一次性加载整个项目代码。如果项目的所有代码加起来Token数小于200k，完全可以把整个项目一次性提交给LLM模型进行分析，而不是逐个文件让模型读取。本工具提供了一键打包所有代码到单文件的功能，让你轻松实现这一点。
@@ -19,6 +18,8 @@
 - **上下文分析** - 显示项目占用各AI模型上下文窗口的比例，判断是否超出限制
 - **一键打包** - 将所有代码文件合并为单个文件，方便一次性提交给AI
 - **智能过滤** - 自动排除无关文件（node_modules、.git等），保留核心代码
+- **GitIgnore 集成** - 自动读取并应用 .gitignore 规则来过滤被忽略的文件和文件夹
+
 
 ## 📦 安装
 
@@ -40,6 +41,9 @@ code-tokenizer --package my_project.txt
 
 # 只显示最大的5个文件
 code-tokenizer --max-show 5
+
+# 禁用自动 .gitignore 规则集成
+code-tokenizer --no-gitignore
 ```
 
 ## 📊 运行示例
