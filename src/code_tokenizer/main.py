@@ -36,7 +36,10 @@ width_manager = TableWidthManager(console)
 def cli(project_path: Optional[Path], max_show: int, package: Optional[str],
         save_csv: Optional[str], json_save: Optional[str], output_json: bool,
         exclude: tuple, include: tuple, no_gitignore: bool):
-    """AI project token statistics tool - Quickly analyze AI model token usage in codebase"""
+    """AI project token statistics tool - Quickly analyze AI model token usage in codebase
+
+    GitHub: https://github.com/org-hex/code-tokenizer
+    """
 
     # Use current directory as default
     if project_path is None:

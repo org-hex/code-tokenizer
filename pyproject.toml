@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "code-tokenizer"
-version = "1.0.0"
+version = "1.0.1"
 description = "A professional CLI tool for counting AI model tokens in code projects"
 readme = "README.md"
 license = "MIT"
