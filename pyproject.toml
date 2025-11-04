@@ -61,14 +61,8 @@ dev = [
 code-tokenizer = "main:cli"
 
 [project.urls]
-Homepage = "https://github.com/your-username/code-tokenizer"
-Documentation = "https://github.com/your-username/code-tokenizer#readme"
-Repository = "https://github.com/your-username/code-tokenizer.git"
-"Bug Tracker" = "https://github.com/your-username/code-tokenizer/issues"
-Changelog = "https://github.com/your-username/code-tokenizer/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/org-hex/code-tokenizer#readme"
 
-[tool.hatch.build.targets.wheel]
-packages = ["."]
 
 [tool.black]
 line-length = 88
@@ -139,14 +133,3 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
-[dependency-groups]
-dev = [
-    "black>=25.9.0",
-    "flake8>=7.3.0",
-    "isort>=7.0.0",
-    "mypy>=1.18.2",
-    "pre-commit>=4.3.0",
-    "pytest>=8.4.2",
-    "pytest-cov>=7.0.0",
-    "safety>=3.6.2",
-]
