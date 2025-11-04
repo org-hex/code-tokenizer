@@ -3,7 +3,7 @@
 **Language:** [English](README.md) | [中文](README_CN.md)
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Python Version](https://img.shields.io/badge/python-3.6%2B-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![PyPI Version](https://img.shields.io/pypi/v/code-tokenizer.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
