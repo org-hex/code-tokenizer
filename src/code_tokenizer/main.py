@@ -18,12 +18,13 @@ from code_tokenizer.core import FileAnalyzer
 from code_tokenizer.constants import DEFAULT_EXCLUDE_PATTERNS
 from code_tokenizer.utils import format_tokens, format_bytes
 from code_tokenizer.table_width_manager import TableWidthManager
+from code_tokenizer import __version__
 
 console = Console()
 width_manager = TableWidthManager(console)
 
 @click.command()
-@click.version_option(version="1.0.0")
+@click.version_option(version=__version__)
 @click.option('--package', '-p', metavar='[filename.txt]', help='Package code into single file for AI analysis')
 @click.option('--max-show', '-m', default=10, help='Show top N largest files (default 10)')
 @click.option('--exclude', '-e', multiple=True, metavar='[pattern]', help='Exclude files/folders (wildcards supported)')
