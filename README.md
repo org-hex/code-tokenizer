@@ -1,6 +1,6 @@
 # Code Tokenizer
 
-**Language:** [English](README.md) | [中文](README_CN.md)
+**Language:** [English](README.md) | [中文](docs/README_CN.md)
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
