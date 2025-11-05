@@ -6,7 +6,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![PyPI Version](https://img.shields.io/pypi/v/code-tokenizer.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Code Style](https://img.shields.io/badge/code%20style-ruff-blue.svg)
 
 A simple command-line tool to quickly calculate AI model Token usage for entire projects, helping you determine if your project is suitable for direct AI analysis.
 

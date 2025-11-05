@@ -6,7 +6,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![PyPI Version](https://img.shields.io/pypi/v/code-tokenizer.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Code Style](https://img.shields.io/badge/code%20style-ruff-blue.svg)
 
 一个简单的命令行工具，快速统计整个项目的AI模型Token使用量，帮你判断项目是否适合直接给AI分析。
 
