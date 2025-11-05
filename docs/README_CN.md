@@ -48,7 +48,7 @@ code-tokenizer --no-gitignore
 
 ## 📊 运行示例
 
-![Code Tokenizer Output](docs/images/screenshot.png)
+![Code Tokenizer Output](images/screenshot.png)
 
 ## 🔧 支持的文件类型
 
