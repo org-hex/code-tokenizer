@@ -40,7 +40,7 @@ class FileAnalyzer:
             if trimmed_line and len(trimmed_line) < 3:
                 small_lines_count += 1
 
-        # Only calculate ratio for non-empty lines
+        # Only calculate ratio for non-empty lines (excluding blank lines and lines with only whitespace)
         non_empty_lines = len([line for line in lines if line.strip()])
         small_lines_percentage = (small_lines_count / non_empty_lines * 100) if non_empty_lines > 0 else 0
 

@@ -97,18 +97,24 @@ class CodeCollector:
 
         # Handle directory patterns (ending with /)
         if pattern.endswith('/'):
-            # Match only directories
+            dir_pattern = pattern.rstrip('/')
+            # Remove leading slash if present
+            if dir_pattern.startswith('/'):
+                dir_pattern = dir_pattern[1:]
+
+            # Check if file/directory is under the specified directory
+            # For directories: check if it matches the directory pattern
             if file_path.is_dir():
-                dir_pattern = pattern.rstrip('/')
-                # Remove leading slash if present
-                if dir_pattern.startswith('/'):
-                    dir_pattern = dir_pattern[1:]
-                # Check if directory name matches or is under the pattern
                 return (fnmatch.fnmatch(relative_path, dir_pattern + '/*') or
                         fnmatch.fnmatch(relative_path, '*/' + dir_pattern + '/*') or
                         fnmatch.fnmatch(relative_path, dir_pattern) or
                         fnmatch.fnmatch(file_path.name, dir_pattern))
-            return False
+            else:
+                # For files: check if the file path is under the directory
+                return (relative_path == dir_pattern or  # exact match
+                        relative_path.startswith(dir_pattern + '/') or  # file under directory
+                        fnmatch.fnmatch(relative_path, dir_pattern + '/*') or  # wildcard match
+                        fnmatch.fnmatch(relative_path, '*/' + dir_pattern + '/*'))  # any level under directory
 
         # Handle absolute patterns (starting with /)
         if pattern.startswith('/'):
