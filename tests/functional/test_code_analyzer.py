@@ -4,7 +4,7 @@ Test file analysis integration, formatted output and other features
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.code_tokenizer.code_collector import CodeAnalyzer
 
 
@@ -284,10 +284,7 @@ quotes = "'single quotes' \"double quotes\" `backticks`"
 
         stats = self.analyzer.analyze_file(str(very_long_file))
 
-        # Check if any model context window is exceeded
-        context_analysis = stats.get('context_analysis', {})
-        has_exceeded = any(info.get('exceeded', False) for info in context_analysis.values())
-
+        
         with patch('src.code_tokenizer.code_collector.console') as mock_console:
             self.analyzer.print_analysis(str(very_long_file), stats)
 

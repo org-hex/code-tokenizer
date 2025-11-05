@@ -7,6 +7,13 @@ __author__ = "Code Tokenizer Team"
 
 from pathlib import Path
 
+from .constants import (
+    DEFAULT_EXCLUDE_PATTERNS,
+    DEFAULT_FILE_PATTERNS,
+    CONTEXT_WINDOWS,
+)
+from .utils import format_tokens, format_bytes
+
 def _get_version_from_pyproject():
     """Get version from pyproject.toml (development fallback)"""
     try:
@@ -40,13 +47,6 @@ def _get_version():
         return _get_version_from_pyproject()
 
 __version__ = _get_version()
-
-from .constants import (
-    DEFAULT_EXCLUDE_PATTERNS,
-    DEFAULT_FILE_PATTERNS,
-    CONTEXT_WINDOWS,
-)
-from .utils import format_tokens, format_bytes
 
 __all__ = [
     "DEFAULT_EXCLUDE_PATTERNS",

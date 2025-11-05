@@ -4,8 +4,6 @@ Test file analysis, token calculation, encoding detection and other core feature
 """
 
 import pytest
-import tempfile
-from pathlib import Path
 from src.code_tokenizer.core import FileAnalyzer
 
 

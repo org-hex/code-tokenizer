@@ -4,19 +4,15 @@ Code Collection and Analysis Tool
 Supports project code scanning, cache management, statistical analysis and other functions
 """
 
-import os
 import json
 import hashlib
 import fnmatch
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Optional, Set
-import click
+from typing import List, Dict
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
-from rich.table import Table
 from rich.panel import Panel
-from rich.text import Text
 
 from .core import FileAnalyzer
 from .constants import DEFAULT_EXCLUDE_PATTERNS, DEFAULT_FILE_PATTERNS
@@ -255,7 +251,7 @@ class CodeCollector:
         """Write file contents to file (internal method)"""
         with open(output_file, 'w', encoding='utf-8') as f:
             # Write header information
-            f.write(f"# Code Collection Report\n")
+            f.write("# Code Collection Report\n")
             f.write(f"# Project Path: {project_path}\n")
             f.write(f"# Collection Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"# File Count: {len(files)}\n")
@@ -295,7 +291,7 @@ class CodeCollector:
         """Write file contents to file (custom format)"""
         with open(output_file, 'w', encoding='utf-8') as f:
             # Write header information
-            f.write(f"# Code Collection Report\n")
+            f.write("# Code Collection Report\n")
             f.write(f"# Project Path: {project_path}\n")
             f.write(f"# Collection Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"# File Count: {len(files)}\n")
@@ -386,7 +382,7 @@ class CodeCollector:
 
             with open(output_file, 'w', encoding='utf-8') as f:
                 # Write header information
-                f.write(f"# Code Collection Report\n")
+                f.write("# Code Collection Report\n")
                 f.write(f"# Project Path: {project_path}\n")
                 f.write(f"# Collection Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"# File Count: {len(files)}\n")

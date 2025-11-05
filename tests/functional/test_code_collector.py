@@ -3,12 +3,10 @@ CodeCollector functional tests
 Test file scanning, filtering, cache management and other features
 """
 
-import pytest
 import tempfile
-import json
 import shutil
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.code_tokenizer.code_collector import CodeCollector
 
 

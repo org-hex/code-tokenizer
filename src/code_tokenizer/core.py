@@ -4,14 +4,12 @@ Core Code Analysis Module
 Provides unified file analysis, token calculation, encoding handling and other core functions
 """
 
-import os
 import re
 import tiktoken
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from .constants import CONTEXT_WINDOWS
-from .utils import format_bytes
 
 
 class FileAnalyzer:
@@ -32,7 +30,6 @@ class FileAnalyzer:
         """Calculate the count and ratio of lines with less than 3 characters (excluding spaces, newlines, tabs)"""
         lines = content.split('\n')
         small_lines_count = 0
-        total_lines = len(lines)
 
         for line in lines:
             # Remove whitespace characters (spaces, tabs, etc.) but keep other characters
@@ -89,7 +86,7 @@ class FileAnalyzer:
             gpt4_token_count = len(gpt4_tokens)
 
             return gpt35_token_count, gpt4_token_count
-        except Exception as e:
+        except Exception:
             # If token calculation fails, return 0
             return 0, 0
 

@@ -4,7 +4,6 @@ Pytest configuration and fixtures for code-tokenizer tests
 
 import pytest
 import tempfile
-import os
 from pathlib import Path
 
 
@@ -471,10 +470,10 @@ def sample_large_file(temp_dir):
         lines.extend([
             f"def function_{i}():",
             f'    """Function {i} - does some computation"""',
-            f"    result = 0",
+            "    result = 0",
             f"    for j in range({i * 10}):",
-            f"        result += j * 2",
-            f"    return result",
+            "        result += j * 2",
+            "    return result",
             ""
         ])
 

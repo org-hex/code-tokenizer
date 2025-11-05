@@ -443,7 +443,7 @@ def run_package_command(project_path: Path, output: Optional[str], exclude: tupl
         try:
             stats = analyzer.analyze_file(file_path)
             total_tokens += stats['token_count']
-        except:
+        except (OSError, ValueError, KeyError):
             continue
 
     # Execute collection

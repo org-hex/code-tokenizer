@@ -1,6 +1,5 @@
 """Common utility functions"""
 
-import math
 from typing import Union
 
 
